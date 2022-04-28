@@ -4,8 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+)
+
+var (
+	ErrPostNotFound      = errors.New("not found")
+	ErrPostNotAuthorized = errors.New("not authorized")
 )
 
 func (mc *Client) CreatePost(ctx context.Context, post PostsCreateResquest) (PostsCreateResponse, error) {
@@ -64,7 +70,11 @@ func (mc *Client) DeletePost(ctx context.Context, slug string) (PostsDeleteRespo
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 404 {
-		return PostsDeleteResponse{}, fmt.Errorf("'%s' not found", slug)
+		return PostsDeleteResponse{}, fmt.Errorf("'%s' %w", slug, ErrPostNotFound)
+	}
+
+	if resp.StatusCode == 403 {
+		return PostsDeleteResponse{}, fmt.Errorf("'%s' %w", slug, ErrPostNotAuthorized)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -89,7 +99,7 @@ func (mc *Client) PostBySlug(ctx context.Context, slug string) (PostsGetResponse
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 404 {
-		return PostsGetResponse{}, fmt.Errorf("'%s' not found", slug)
+		return PostsGetResponse{}, fmt.Errorf("'%s' %w", slug, ErrPostNotFound)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
