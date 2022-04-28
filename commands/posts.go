@@ -65,6 +65,8 @@ func newPostsCreateCommand() *cobra.Command {
 			fmt.Printf("%s: '%s' created successfully\n%s\n", cmd.Use, resp.Slug, resp.URL)
 			fmt.Printf("%s\n", resp.URL)
 			fmt.Printf("\n")
+		} else {
+			log.Fatalf("%s: error creating new post: %s\n", cmd.Use, err)
 		}
 	}
 
@@ -122,6 +124,7 @@ func newPostsEditCommand() *cobra.Command {
 		if err != nil {
 			log.Fatalf("%s: couldn't create temp file: %s", cmd.Use, err)
 		}
+		defer file.Close()
 
 		_, err = file.WriteString(response.Post.ToMarkdown())
 		if err != nil {
