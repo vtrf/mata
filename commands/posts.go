@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -185,6 +186,7 @@ func newPostsEditCommand() *cobra.Command {
 }
 
 func newPostsGetCommand() *cobra.Command {
+	var jsonFlag bool
 	run := func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 
@@ -200,6 +202,16 @@ func newPostsGetCommand() *cobra.Command {
 			log.Fatalf("%s: couldn't get post '%s': %s", cmd.Use, slug, response.Error)
 		}
 
+		if jsonFlag {
+			output, err := json.MarshalIndent(response.Post, "", "  ")
+			if err != nil {
+				log.Fatalf("%s: %s", cmd.Use, err)
+			}
+
+			fmt.Println(string(output))
+			return
+		}
+
 		md := response.Post.ToMarkdown()
 		fmt.Println(md)
 	}
@@ -210,6 +222,7 @@ func newPostsGetCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run:   run,
 	}
+	cmd.Flags().BoolVar(&jsonFlag, "json", false, "output JSON")
 	return cmd
 }
 
@@ -252,6 +265,8 @@ func newPostsUpdateCommand() *cobra.Command {
 }
 
 func newPostsListCommand() *cobra.Command {
+	var jsonFlag bool
+
 	run := func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 		c := mataroa.NewMataroaClient()
@@ -259,6 +274,16 @@ func newPostsListCommand() *cobra.Command {
 		posts, err := c.ListPosts(ctx)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if jsonFlag {
+			output, err := json.MarshalIndent(posts, "", "  ")
+			if err != nil {
+				log.Fatalf("%s: %s", cmd.Use, err)
+			}
+
+			fmt.Println(string(output))
+			return
 		}
 
 		for _, post := range posts {
@@ -274,5 +299,7 @@ func newPostsListCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		Run:   run,
 	}
+
+	cmd.Flags().BoolVar(&jsonFlag, "json", false, "output JSON")
 	return cmd
 }
