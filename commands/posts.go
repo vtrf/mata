@@ -90,7 +90,7 @@ func newPostsDeleteCommand() *cobra.Command {
 		}
 
 		if !response.OK {
-			log.Fatalf("%s: couldn't delete post: %s", cmd.Use, response.Error)
+			log.Fatalf("%s: couldn't delete post '%s': %s", cmd.Use, slug, response.Error)
 		}
 
 		fmt.Printf("%s: '%s' deleted sucessfully\n", cmd.Use, slug)
@@ -236,7 +236,7 @@ func newPostsUpdateCommand() *cobra.Command {
 		}
 
 		if response.OK {
-			fmt.Printf("%s: '%s' successfully updated", cmd.Use, slug)
+			fmt.Printf("%s: '%s' successfully updated\n", cmd.Use, slug)
 		} else {
 			log.Fatalf("%s: couldn't update '%s': %s", cmd.Use, slug, response.Error)
 		}
