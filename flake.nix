@@ -9,7 +9,7 @@
   outputs = { self, nixpkgs, utils }:
     let
       pname = "mata";
-      version = "0.2.0";
+      version = "0.2.2";
     in
     {
       overlays.default = final: prev: {
