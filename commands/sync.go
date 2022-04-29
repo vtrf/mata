@@ -16,6 +16,7 @@ func isMarkdownFile(path string) bool {
 }
 
 func newSyncCommand() *cobra.Command {
+	var directory string
 	run := func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 
@@ -26,7 +27,7 @@ func newSyncCommand() *cobra.Command {
 			}).Fatal(err)
 		}
 
-		if err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+		if err := filepath.WalkDir(directory, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -101,5 +102,7 @@ func newSyncCommand() *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		Run:     run,
 	}
+
+	cmd.Flags().StringVarP(&directory, "directory", "d", ".", "Diretory containing blog posts.")
 	return cmd
 }
