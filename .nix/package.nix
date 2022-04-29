@@ -14,7 +14,7 @@ buildGoModule {
 
   nativeBuildInputs = [ pandoc ];
 
-  vendorSha256 = "sha256-benOdmXp6R1Fwioi5d4KQAgaCJsLavYQ6fCT/FyBUFs=";
+  vendorSha256 = "sha256-Dw0bIIssEd8UEh+pnd+Nk7RP72+HvHTGwJlOpCOQRG8=";
 
   subPackages = [ "cmd/mata" ];
 

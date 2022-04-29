@@ -3,10 +3,10 @@ package commands
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"git.sr.ht/~glorifiedgluer/mata/config"
 	"github.com/adrg/xdg"
@@ -19,26 +19,26 @@ func newInitCommand() *cobra.Command {
 
 		filePath, err := xdg.ConfigFile(config.ConfigPath)
 		if err != nil {
-			log.Fatalf("%s: error initializing mata: %s", cmd.Use, err)
+			log.WithField("cmd", cmd.Use).Fatal(err)
 		}
 
 		if _, err := os.Stat(filePath); err == nil {
-			log.Fatalf("%s: error initializing mata: config.json already exists", cmd.Use)
+			log.WithField("cmd", cmd.Use).Fatal("config.json already exists")
 		} else if errors.Is(err, os.ErrNotExist) {
 			body, err := json.MarshalIndent(config.Config{
 				Endpoint: "https://mataroa.blog/api",
 				Key:      "your-api-key-here",
 			}, "", "  ")
 			if err != nil {
-				log.Fatalf("%s: error initializing mata: couldn't marshal json file", cmd.Use)
+				log.WithField("cmd", cmd.Use).Fatal(err)
 			}
 
 			err = ioutil.WriteFile(filePath, body, os.FileMode((0600)))
 			if err != nil {
-				log.Fatalf("%s: error initializing mata: %s", cmd.Use, err)
+				log.WithField("cmd", cmd.Use).Fatal(err)
 			}
 
-			fmt.Printf("%s: mata initialized successfully: '%s' file created\n", cmd.Use, filePath)
+			log.Infof("%s: mata initialized successfully: '%s' file created\n", cmd.Use, filePath)
 		}
 	}
 

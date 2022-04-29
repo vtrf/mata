@@ -1,13 +1,12 @@
 package commands
 
 import (
-	"fmt"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	"git.sr.ht/~glorifiedgluer/mata/mataroa"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +19,12 @@ func newSyncCommand() *cobra.Command {
 	run := func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 
-		c := mataroa.NewMataroaClient()
+		c, err := mataroa.NewMataroaClient()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"cmd": cmd.Use,
+			}).Fatal(err)
+		}
 
 		if err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
@@ -34,45 +38,68 @@ func newSyncCommand() *cobra.Command {
 
 			f, err := ioutil.ReadFile(path)
 			if err != nil {
-				log.Fatalf("%s: error reading markdown file '%s': %s", cmd.Use, path, err)
+				log.WithFields(log.Fields{
+					"cmd":  cmd.Use,
+					"path": path,
+				}).Fatal(err)
 			}
 
 			post, err := mataroa.NewPost(f)
 			if err != nil {
-				log.Fatalf("%s: error parsing post '%s': %s\n", cmd.Use, path, err)
+				log.WithFields(log.Fields{
+					"cmd":  cmd.Use,
+					"path": path,
+				}).Fatal(err)
 			}
 
 			_, err = c.PostBySlug(ctx, post.Slug)
 			if err != nil {
-				fmt.Printf("%s: couldn't find any post with the slug '%s'", cmd.Use, post.Slug)
+				log.WithFields(log.Fields{
+					"cmd":  cmd.Use,
+					"path": path,
+					"slug": post.Slug,
+				}).Warn(err)
 				return nil
 			}
 
 			resp, err := c.UpdatePost(ctx, post.Slug, post)
 			if err != nil {
-				log.Fatalf("%s: error creating new post '%s': %s", cmd.Use, path, err)
+				log.WithFields(log.Fields{
+					"cmd":  cmd.Use,
+					"path": path,
+					"slug": post.Slug,
+				}).Fatal(err)
 			}
 
 			if !resp.OK {
-				fmt.Printf("%s: unable to update post '%s': %s", cmd.Use, path, resp.Error)
+				log.WithFields(log.Fields{
+					"cmd":  cmd.Use,
+					"path": path,
+					"slug": post.Slug,
+				}).Warn(resp.Error)
 				return nil
 			}
 
-			fmt.Printf("%s: '%s' updated successfully\n", cmd.Use, resp.Slug)
-			fmt.Printf("%s\n", resp.URL)
-			fmt.Printf("\n")
+			log.WithFields(log.Fields{
+				"cmd":  cmd.Use,
+				"path": path,
+				"slug": post.Slug,
+			}).Info("updated successfully")
 
 			return nil
 		}); err != nil {
-			log.Fatalf("%s: %s", cmd.Use, err)
+			log.WithFields(log.Fields{
+				"cmd": cmd.Use,
+			}).Fatal(err)
 		}
 	}
 
 	cmd := &cobra.Command{
-		Use:   "sync",
-		Short: "sync all your posts",
-		Args:  cobra.ExactArgs(0),
-		Run:   run,
+		Use:     "sync",
+		Aliases: []string{"s"},
+		Short:   "sync all your posts",
+		Args:    cobra.ExactArgs(0),
+		Run:     run,
 	}
 	return cmd
 }

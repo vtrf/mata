@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -18,10 +17,10 @@ type Client struct {
 	HTTP     *http.Client
 }
 
-func NewMataroaClient() *Client {
+func NewMataroaClient() (*Client, error) {
 	config, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		return &Client{}, err
 	}
 
 	httpClient := &http.Client{
@@ -31,7 +30,7 @@ func NewMataroaClient() *Client {
 		endpoint: config.Endpoint,
 		key:      config.Key,
 		HTTP:     httpClient,
-	}
+	}, nil
 }
 
 func (mc *Client) newMataroaRequest(ctx context.Context, method, url string, body io.Reader) (*http.Response, error) {
