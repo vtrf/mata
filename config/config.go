@@ -21,6 +21,7 @@ type Config struct {
 }
 
 func LoadConfig() (Config, error) {
+	var err error
 	if os.Getenv(EnvEndpoint) != "" && os.Getenv(EnvKey) != "" {
 		return Config{
 			Key:      os.Getenv(EnvKey),
@@ -28,12 +29,16 @@ func LoadConfig() (Config, error) {
 		}, nil
 	}
 
-	filePath, err := xdg.ConfigFile(ConfigPath)
-	if err != nil {
-		return Config{}, fmt.Errorf("error finding config file: %s", err)
+	var path string
+	path = os.Getenv("MATAROA_CONFIG")
+	if path == "" {
+		path, err = xdg.ConfigFile(ConfigPath)
+		if err != nil {
+			return Config{}, fmt.Errorf("error finding config file: %s", err)
+		}
 	}
 
-	f, err := ioutil.ReadFile(filePath)
+	f, err := ioutil.ReadFile(path)
 	if err != nil {
 		return Config{}, fmt.Errorf("error reading config file: %s", err)
 	}

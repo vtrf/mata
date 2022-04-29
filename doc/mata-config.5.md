@@ -2,7 +2,6 @@
 title: mata-config
 section: 5
 header: User Manual
-footer: mata 0.1.0
 date: April 26, 2022
 ---
 
@@ -14,7 +13,7 @@ mata-config - configuration file formats for *mata*(1)
 
 There is only one configuration file for mata: *config.json*. The program looks 
 after this file in your XDG config home plus "mata", which defaults to 
-~/.config/mata. This file uses the _json_ format.
+~/.config/mata or the path on *MATAROA_CONFIG*. This file uses the _json_ format.
 
 Another way to configure the CLI is to set the respective *MATAROA_ENDPOINT* and
 *MATAROA_KEY* environment variables. If both variables are set, the program will

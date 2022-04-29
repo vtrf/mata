@@ -5,6 +5,19 @@
 
 [mata](https://git.sr.ht/~glorifiedgluer/mata) is CLI tool for [mataroa.blog](https://mataroa.blog).
 
+
+# Table of Contents
+
+- [mata](#mata)
+- [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+  - [Documentation](#documentation)
+  - [Building](#building)
+    - [From Source](#from-source)
+    - [From Nix](#from-nix)
+  - [Contributing](#contributing)
+- [License](#license)
+
 ## Usage
 
 Run `mata init` to get started. Read the man page to learn about all commands.
