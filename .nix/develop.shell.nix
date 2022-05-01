@@ -1,10 +1,11 @@
 { pkgs, ... }:
 
 with pkgs; mkShell {
-  nativeBuildInputs = [ pkg-config openssl ];
+  nativeBuildInputs = [ pkg-config ];
   buildInputs = [
     cargo
     clippy
+    openssl
     rust-analyzer
     rustc
     rustfmt
