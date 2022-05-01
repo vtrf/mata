@@ -116,6 +116,7 @@ fn cli() -> Command<'static> {
                         .arg_required_else_help(true),
                 ),
         )
+        .subcommand(Command::new("sync").about("Sync all your posts"))
 }
 
 #[tokio::main]
