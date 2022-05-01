@@ -2,8 +2,10 @@
 
 with pkgs; mkShell {
   buildInputs = [
-    gnumake
-    go
-    golangci-lint
+    cargo
+    clippy
+    rust-analyzer
+    rustc
+    rustfmt
   ];
 }

@@ -26,15 +26,14 @@ Run `mata init` to get started. Read the man page to learn about all commands.
 
 Also available as man pages:
 
-- [mata(1)](https://git.sr.ht/~glorifiedgluer/mata/tree/master/item/doc/mata.1.scd)
-- [mata-config(5)](https://git.sr.ht/~glorifiedgluer/mata/tree/master/item/doc/mata-config.5.scd)
+_Work in Progress_
 
 ## Building
 
 Dependencies (not needed for Nix users):
 
-- Go
-- Pandoc (optional, for man pages)
+- Rust 1.59.0 or later
+- [scdoc](https://git.sr.ht/~sircmpwn/scdoc) (optional, for man pages)
 
 ### From Source
 

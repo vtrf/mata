@@ -1,19 +1,14 @@
 { pkgs, ... }:
 
 with pkgs; mkShell {
+  nativeBuildInputs = [ pkg-config openssl ];
   buildInputs = [
-    gnumake
-    go
-    pandoc
+    cargo
+    clippy
+    rust-analyzer
+    rustc
+    rustfmt
 
-    # https://github.com/golang/vscode-go/blob/master/docs/tools.md
-    delve
-    go-outline
-    golangci-lint
-    gomodifytags
-    gopls
-    gopkgs
-    gotests
-    impl
+    scdoc
   ];
 }

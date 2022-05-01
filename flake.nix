@@ -8,21 +8,13 @@
 
   outputs = { self, nixpkgs, utils }:
     let
-      pname = "mata";
-      version = "0.3.1";
+      cargoToml = (builtins.fromTOML (builtins.readFile ./Cargo.toml));
+      pname = cargoToml.package.name;
+      version = cargoToml.package.version;
     in
-    {
-      overlays.default = final: prev: {
-        mata = final.callPackage ./.nix/package.nix {
-          inherit final pname version;
-        };
-      };
-    } //
     utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
+        pkgs = import nixpkgs { inherit system; };
 
         inherit (pkgs) callPackage;
       in

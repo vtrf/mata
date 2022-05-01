@@ -1,0 +1,15 @@
+[package]
+name = "mata"
+version = "0.4.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "3.1.14", default-features = false, features = ["std", "derive"] }
+platform-dirs = "0.3.0"
+
+tokio = { version = "1.18.0", features = ["rt-multi-thread", "net", "macros"] }
+reqwest = { version = "0.11", features = ["json"] }
+
+gray_matter = "0.2.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
