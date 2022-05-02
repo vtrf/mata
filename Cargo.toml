@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "3.1.14", default-features = false, features = ["std", "derive"] }
+glob = "0.3.0"
 platform-dirs = "0.3.0"
 
 tokio = { version = "1.18.0", features = ["rt-multi-thread", "net", "macros"] }

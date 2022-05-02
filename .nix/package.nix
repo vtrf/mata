@@ -17,7 +17,7 @@ rustPlatform.buildRustPackage {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl scdoc ];
 
-  cargoSha256 = "sha256-JCJX4zZE+7oJsCAbAfk4TvC1zcaG5/Ukxqq1YftFUqc=";
+  cargoSha256 = "sha256-4FrEvIA1xqV0TOqV+qiJye1/CJbyFTU6TUBZsLVE2gU=";
 
   # TODO: add this when we have documentation written with scdoc
   # makeFlags = [

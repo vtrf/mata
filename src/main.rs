@@ -1,10 +1,12 @@
 use clap::{arg, Arg, Command};
+use glob::glob;
 use gray_matter::{engine::YAML, Matter};
 use platform_dirs::AppDirs;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
+    path::Path,
     process,
 };
 
@@ -88,6 +90,16 @@ fn cli() -> Command<'static> {
             Command::new("posts")
                 .about("Manage posts")
                 .subcommand(
+                    Command::new("sync").about("Sync all your posts").arg(
+                        Arg::new("directory")
+                            .long("directory")
+                            .short('d')
+                            .help("Directory to look after posts")
+                            .takes_value(true)
+                            .default_value("."),
+                    ),
+                )
+                .subcommand(
                     Command::new("delete")
                         .about("Delete a post")
                         .arg(arg!(<SLUG> "Post slug"))
@@ -116,7 +128,6 @@ fn cli() -> Command<'static> {
                         .arg_required_else_help(true),
                 ),
         )
-        .subcommand(Command::new("sync").about("Sync all your posts"))
 }
 
 #[tokio::main]
@@ -269,6 +280,62 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                             let pretty = serde_json::to_string_pretty(&resp).unwrap();
                             println!("{}", pretty)
+                        }
+                    }
+                }
+                ("sync", args) => {
+                    let directory = args.value_of("directory").unwrap();
+                    let path = Path::new(directory);
+
+                    for entry in glob(path.join("*.md").to_str().unwrap())
+                        .unwrap()
+                        .chain(glob(path.join("*.markdown").to_str().unwrap()).unwrap())
+                    {
+                        if let Ok(path) = entry {
+                            let content =
+                                // FIXME: remove clone
+                                fs::read_to_string(path.clone()).expect("couldn't read file");
+
+                            let matter = Matter::<YAML>::new();
+                            let result = matter
+                                .parse_with_struct::<FrontMatter>(content.as_str())
+                                .unwrap();
+
+                            if result.data.slug.is_none() {
+                                println!("'{}' missing slug attribute", path.display());
+                            }
+
+                            let post = PostsPatchRequest {
+                                published_at: result.data.published_at,
+                                title: result.data.title,
+                                // FIXME: remove clone
+                                slug: result.data.slug.clone(),
+                                body: Some(result.content),
+                            };
+
+                            let slug = result.data.slug.unwrap();
+
+                            let response = client
+                                .patch(format!("{}/posts/{}", config.endpoint, slug))
+                                .json(&post)
+                                .send()
+                                .await?;
+
+                            match response.status() {
+                                StatusCode::NOT_FOUND => {
+                                    println!("post '{}' not found", slug);
+                                    process::exit(1);
+                                }
+                                _ => {
+                                    let resp = response.json::<PostsPatchResponse>().await?;
+                                    if !resp.ok {
+                                        println!("{}", resp.error.unwrap());
+                                        process::exit(1);
+                                    }
+
+                                    println!("'{}' updated successfully", slug)
+                                }
+                            }
                         }
                     }
                 }
