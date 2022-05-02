@@ -291,50 +291,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .unwrap()
                         .chain(glob(path.join("*.markdown").to_str().unwrap()).unwrap())
                     {
-                        if let Ok(path) = entry {
-                            let content =
+                        let content =
                                 // FIXME: remove clone
-                                fs::read_to_string(path.clone()).expect("couldn't read file");
+                                fs::read_to_string().expect("couldn't read file");
 
-                            let matter = Matter::<YAML>::new();
-                            let result = matter
-                                .parse_with_struct::<FrontMatter>(content.as_str())
-                                .unwrap();
+                        let matter = Matter::<YAML>::new();
+                        let result = matter
+                            .parse_with_struct::<FrontMatter>(content.as_str())
+                            .unwrap();
 
-                            if result.data.slug.is_none() {
-                                println!("'{}' missing slug attribute", path.display());
+                        if result.data.slug.is_none() {
+                            println!("'{}' missing slug attribute", path.display());
+                        }
+
+                        let post = PostsPatchRequest {
+                            published_at: result.data.published_at,
+                            title: result.data.title,
+                            // FIXME: remove clone
+                            slug: result.data.slug.clone(),
+                            body: Some(result.content),
+                        };
+
+                        let slug = result.data.slug.unwrap();
+
+                        let response = client
+                            .patch(format!("{}/posts/{}", config.endpoint, slug))
+                            .json(&post)
+                            .send()
+                            .await?;
+
+                        match response.status() {
+                            StatusCode::NOT_FOUND => {
+                                println!("post '{}' not found", slug);
+                                process::exit(1);
                             }
-
-                            let post = PostsPatchRequest {
-                                published_at: result.data.published_at,
-                                title: result.data.title,
-                                // FIXME: remove clone
-                                slug: result.data.slug.clone(),
-                                body: Some(result.content),
-                            };
-
-                            let slug = result.data.slug.unwrap();
-
-                            let response = client
-                                .patch(format!("{}/posts/{}", config.endpoint, slug))
-                                .json(&post)
-                                .send()
-                                .await?;
-
-                            match response.status() {
-                                StatusCode::NOT_FOUND => {
-                                    println!("post '{}' not found", slug);
+                            _ => {
+                                let resp = response.json::<PostsPatchResponse>().await?;
+                                if !resp.ok {
+                                    println!("{}", resp.error.unwrap());
                                     process::exit(1);
                                 }
-                                _ => {
-                                    let resp = response.json::<PostsPatchResponse>().await?;
-                                    if !resp.ok {
-                                        println!("{}", resp.error.unwrap());
-                                        process::exit(1);
-                                    }
 
-                                    println!("'{}' updated successfully", slug)
-                                }
+                                println!("'{}' updated successfully", slug)
                             }
                         }
                     }
